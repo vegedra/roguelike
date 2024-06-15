@@ -1,0 +1,236 @@
+To add interactivity to your text adventure game in C, you can implement various commands and mechanics that allow the player to interact with the game world beyond simple navigation. Here's how you can do it:
+
+### Steps to Implement Interactivity
+
+1. **Command Handling:** Parse player input to recognize commands.
+2. **Command Execution:** Perform actions based on the recognized commands.
+3. **Inventory System:** Allow players to collect and use items.
+4. **Simple Combat System:** Implement basic combat mechanics.
+5. **Dynamic Room Descriptions:** Update room descriptions based on player actions.
+
+Below, I’ll show you how to add command handling and an inventory system to your game. You can expand it further based on your needs.
+
+### Updated Code with Interactivity
+
+Here’s the code with added interactivity:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <locale.h>
+#include <curses.h> // Include PDCurses library
+
+#define NUM_ROOMS 4
+#define NAME_SIZE 15
+#define DESC_SIZE 256
+#define INVENTORY_SIZE 10
+
+typedef struct {
+    char name[NAME_SIZE];
+    char description[DESC_SIZE];
+    int north;
+    int south;
+    int east;
+    int west;
+    char item[NAME_SIZE];
+} Room;
+
+typedef struct {
+    char name[NAME_SIZE];
+    int quantity;
+} Item;
+
+Room rooms[NUM_ROOMS];
+int currentRoomIndex = 0;
+char player_move[10];
+Item inventory[INVENTORY_SIZE];
+int inventoryCount = 0;
+
+void displayPlayerStats();
+void handleMovement();
+void generateCharacter();
+void initializeRooms();
+void handleCommand(const char* command);
+void pickUpItem();
+void displayInventory();
+
+int main(void) {
+    setlocale(LC_ALL, "Portuguese");
+    initscr();
+    cbreak();
+    keypad(stdscr, TRUE);
+    curs_set(0);
+
+    initializeRooms();
+
+    int input;
+    do {
+        clear();
+        mvprintw(0, 0, "***************************************");
+        mvprintw(1, 0, "*       Fantasy Lied - Arena          *");
+        mvprintw(2, 0, "*        by Pedro Ivo, 2024           *");
+        mvprintw(3, 0, "*            1) Play                  *");
+        mvprintw(4, 0, "*            2) Exit                  *");
+        mvprintw(5, 0, "***************************************");
+        mvprintw(6, 0, "> ");
+        refresh();
+
+        scanw("%d", &input);
+
+        if (input == 1) {
+            generateCharacter();
+            do {
+                clear();
+                displayPlayerStats();
+                mvprintw(4, 0, "Command (north, south, east, west, pick, inventory, exit): ");
+                refresh();
+                scanw("%9s", player_move); // Limit input to 9 characters
+
+                handleCommand(player_move);
+            } while (strcasecmp(player_move, "exit") != 0);
+        }
+    } while (input != 2);
+
+    mvprintw(14, 0, "\nExiting the game.");
+    refresh();
+    endwin();
+    return 0;
+}
+
+void initializeRooms() {
+    strcpy(rooms[0].name, "Cave");
+    strcpy(rooms[0].description, "A damp and dark cave.");
+    rooms[0].north = 1;
+    rooms[0].south = 2;
+    rooms[0].east = 3;
+    rooms[0].west = -1;
+    strcpy(rooms[0].item, "Torch");
+
+    strcpy(rooms[1].name, "Forest");
+    strcpy(rooms[1].description, "A dense and dark forest.");
+    rooms[1].north = -1;
+    rooms[1].south = 0;
+    rooms[1].east = -1;
+    rooms[1].west = -1;
+    strcpy(rooms[1].item, "Bow");
+
+    strcpy(rooms[2].name, "Desert");
+    strcpy(rooms[2].description, "A hot and arid desert.");
+    rooms[2].north = 0;
+    rooms[2].south = -1;
+    rooms[2].east = -1;
+    rooms[2].west = -1;
+    strcpy(rooms[2].item, "Water Bottle");
+
+    strcpy(rooms[3].name, "Castle");
+    strcpy(rooms[3].description, "An old and ruined castle.");
+    rooms[3].north = -1;
+    rooms[3].south = -1;
+    rooms[3].east = -1;
+    rooms[3].west = 0;
+    strcpy(rooms[3].item, "Sword");
+}
+
+void displayPlayerStats() {
+    mvprintw(0, 0, "You are in %s.\n", rooms[currentRoomIndex].name);
+    mvprintw(1, 0, "%s\n", rooms[currentRoomIndex].description);
+    if (strlen(rooms[currentRoomIndex].item) > 0) {
+        mvprintw(2, 0, "You see a %s here.\n", rooms[currentRoomIndex].item);
+    }
+}
+
+void handleMovement() {
+    int newRoomIndex = -1;
+
+    if (strcasecmp(player_move, "north") == 0) {
+        newRoomIndex = rooms[currentRoomIndex].north;
+    } else if (strcasecmp(player_move, "south") == 0) {
+        newRoomIndex = rooms[currentRoomIndex].south;
+    } else if (strcasecmp(player_move, "east") == 0) {
+        newRoomIndex = rooms[currentRoomIndex].east;
+    } else if (strcasecmp(player_move, "west") == 0) {
+        newRoomIndex = rooms[currentRoomIndex].west;
+    }
+
+    if (newRoomIndex >= 0) {
+        currentRoomIndex = newRoomIndex;
+    } else {
+        mvprintw(3, 0, "Invalid move or no exit in that direction. Try again.\n");
+    }
+}
+
+void generateCharacter() {
+    char name[50];
+
+    clear();
+    mvprintw(0, 0, "What is your name?\n");
+    refresh();
+    scanw("%49s", name);
+
+    mvprintw(2, 0, "Thank you for joining me, %s.", name);
+    mvprintw(3, 0, "I am Theia, and my goal is to meet the ancient demon king.");
+    mvprintw(4, 0, "He is at the lowest point of this dungeon.");
+    mvprintw(5, 0, "I count on you to guide me to him.\n");
+    refresh();
+    getch();
+}
+
+void handleCommand(const char* command) {
+    if (strcasecmp(command, "north") == 0 || strcasecmp(command, "south") == 0 ||
+        strcasecmp(command, "east") == 0 || strcasecmp(command, "west") == 0) {
+        handleMovement();
+    } else if (strcasecmp(command, "pick") == 0) {
+        pickUpItem();
+    } else if (strcasecmp(command, "inventory") == 0) {
+        displayInventory();
+    } else {
+        mvprintw(5, 0, "Unknown command.\n");
+    }
+}
+
+void pickUpItem() {
+    if (strlen(rooms[currentRoomIndex].item) > 0) {
+        if (inventoryCount < INVENTORY_SIZE) {
+            strcpy(inventory[inventoryCount].name, rooms[currentRoomIndex].item);
+            inventory[inventoryCount].quantity = 1;
+            inventoryCount++;
+            mvprintw(5, 0, "You picked up the %s.\n", rooms[currentRoomIndex].item);
+            rooms[currentRoomIndex].item[0] = '\0'; // Remove item from room
+        } else {
+            mvprintw(5, 0, "Your inventory is full.\n");
+        }
+    } else {
+        mvprintw(5, 0, "There's nothing to pick up here.\n");
+    }
+}
+
+void displayInventory() {
+    mvprintw(5, 0, "Inventory:\n");
+    for (int i = 0; i < inventoryCount; i++) {
+        mvprintw(6 + i, 0, "%d) %s\n", i + 1, inventory[i].name);
+    }
+}
+```
+
+### New Features Added
+
+1. **Command Handling:**
+   - **Function `handleCommand()`:** This function interprets commands like "north", "south", "pick", and "inventory". It calls appropriate functions to handle each command.
+   - Commands can be expanded further to include more interactions.
+
+2. **Inventory System:**
+   - **Structure `Item`:** Represents an item with a `name` and `quantity`.
+   - **Array `inventory[]`:** Stores the player's inventory items.
+   - **Function `pickUpItem()`:** Adds an item from the current room to the player's inventory.
+   - **Function `displayInventory()`:** Displays the current inventory contents.
+
+3. **Items in Rooms:**
+   - **Field `item` in `Room`:** Each room can contain an item that the player can pick up.
+   - Room descriptions are updated to mention if there's an item present.
+
+### Explanation
+
+- **Command Input:** The player can enter commands like "north", "south", "pick", and "inventory". These commands are processed in `handleCommand()`.
+  - **Navigation:** `handleMovement()` is called for movement commands to update the current room.
+  - **Picking Items:** `pickUpItem

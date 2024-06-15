@@ -1,2 +1,2 @@
 ﻿@echo off
-gcc .\src\*.c -I.\include\ -o Game
+gcc .\src\*.c -I.\include\ -lpdcurses -o Game

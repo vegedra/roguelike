@@ -1,0 +1,98 @@
+﻿/******************************************************************************
+
+                            Fantasy Lied - Arena
+                             by Pedro Ivo, 2024
+
+*******************************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <locale.h>
+
+// Variaveis
+char currentRoom[15] = "Caverna";
+char player_move[10];
+
+// Prototipos
+void player_stats();
+void movement();
+void char_gen();
+
+int main(void) {
+	setlocale(LC_ALL,"Portuguese");
+	
+	int input;
+	do {
+	printf("***************************************");
+	printf("\n*       Fantasy Lied - Arena          *");
+	printf("\n*        by Pedro Ivo, 2024           *");
+	printf("\n*                                     *");
+	printf("\n*                                     *");
+	printf("\n*                                     *");
+	printf("\n*            1) Jogar                 *");
+	printf("\n*            2) Sair                  *");
+	printf("\n*                                     *");
+	printf("\n*                                     *");
+	printf("\n***************************************");
+	printf("\n> ");
+	scanf("%d", &input);
+	
+	if (input < 1 || input > 2) {
+	    printf("Opção inválida.");
+	    break;
+	} 
+	if (input == 1) {
+	    char_gen();
+	    player_stats();
+		printf("\nEscolha uma direção: ");
+		scanf("%9s", player_move);  // O 9 é para limitar o quanto que o jogador pode digitar
+		
+        // Se usa strcasecmp para comparar strings ignorando maiúsculas/minúsculas - strcmp não
+        if (strcasecmp(player_move, "sair") == 0) {
+            break;  // Sai do loop se o jogador digitar "sair"
+        } 
+        
+        // Verifica para onde o jogador quer ir
+        movement();
+	} 
+	if (input == 2) { 
+	    break;
+	}
+	
+	} while (input != 2);
+	    // Se o loop encerrar
+        printf("\nSaindo do jogo.");
+        return 0;
+}
+
+// Mostra onde o jogador está
+void player_stats() {
+	printf("\nVocê está em %s.\n", currentRoom);
+}
+
+// Movimentação do jogador
+void movement() {
+	printf("\a");
+    if (strcasecmp(player_move, "norte") == 0) {
+        strcpy(currentRoom, "floresta");
+    } else if (strcasecmp(player_move, "sul") == 0) {
+        strcpy(currentRoom, "deserto");
+    } else {
+        printf("Movimento inválido. Tente novamente.\n");
+    }
+}
+
+void char_gen() {
+	char name[50]; 
+
+	// MENU SCREEN
+	
+	printf("\nQual seu nome?\n");
+	scanf("%s", name);
+
+	printf("Obrigado por atender meu pedido, %s.", name);
+	printf("\nEu me chamo Theia, meu objetivo é me encontrar com o antigo rei dos demonios.");
+	printf("\nEle se encontra no ponto mais baixo desse subsolo.");
+	printf("\nConto com você para me guiar até ele.\n");
+    }
