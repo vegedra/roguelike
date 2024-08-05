@@ -12,6 +12,8 @@ typedef struct Player {
 
 int screenSetup();
 int mapSetup();
+int handleInput(int input, Player * user);
+int playerMove(int y, int x, Player * user);
 Player * playerSetup();
 
 int main() {
@@ -23,8 +25,9 @@ int main() {
 	
 	user = playerSetup();
 	
+	// Main game loop
 	while ((ch = getch()) != 'q') {
-		
+		handleInput(ch, user);
 	}
 	endwin();
 	return 0;
@@ -34,7 +37,8 @@ int screenSetup() {
 	initscr();
 	noecho();
 
-	printw("Hello world");
+	printw("Fantasy Lied by Pedro Ivo, 2024\n");
+	printw("v0.0.1");
 	refresh();
 	
 	return 0;
@@ -63,8 +67,46 @@ Player * playerSetup() {
 	newPlayer->posY = 14;
 	newPlayer->hp = 20;
 	
-	mvprintw(newPlayer->posY, newPlayer->posX, "@"); // acaba colocando o cursor a frente
-	move(14, 14); // volta o cursor para posição do player
+	playerMove(14, 14, newPlayer);
 	
 	return newPlayer;
+}
+
+int handleInput(int input, Player * user) {
+	switch (input) {
+		// up
+		case 'w':
+		case 'W':
+			playerMove(user->posY-1, user->posX, user);
+			break;
+			
+		// down
+		case 's':
+		case 'S':
+			playerMove(user->posY+1, user->posX, user);
+			break;
+			
+		// left
+		case 'a':
+		case 'A':
+			playerMove(user->posY, user->posX-1, user);
+			break;
+			
+		// right
+		case 'd':
+		case 'D':
+			playerMove(user->posY, user->posX+1, user);
+			break;
+			
+		default:
+			break;
+	}
+}
+
+int playerMove(int y, int x, Player * user) {
+	mvprintw(user->posY, user->posX, "."); 
+	user->posY = y;
+	user->posX = x;
+	mvprintw(user->posY, user->posX, "@"); 
+	move(user->posY, user->posX);
 }
