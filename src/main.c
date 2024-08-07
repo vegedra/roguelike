@@ -14,6 +14,7 @@ int screenSetup();
 int mapSetup();
 int handleInput(int input, Player * user);
 int playerMove(int y, int x, Player * user);
+int checkPosition(int newY, int newX, Player * user);
 Player * playerSetup();
 
 int main() {
@@ -38,7 +39,7 @@ int screenSetup() {
 	noecho();
 
 	printw("Fantasy Lied by Pedro Ivo, 2024\n");
-	printw("v0.0.1");
+	printw("v0.0.3");
 	refresh();
 	
 	return 0;
@@ -73,32 +74,55 @@ Player * playerSetup() {
 }
 
 int handleInput(int input, Player * user) {
+	int newY;
+	int newX;
+	
 	switch (input) {
 		// up
 		case 'w':
 		case 'W':
-			playerMove(user->posY-1, user->posX, user);
+			newY = user->posY - 1;
+			newX = user->posX;
 			break;
 			
 		// down
 		case 's':
 		case 'S':
-			playerMove(user->posY+1, user->posX, user);
+			newY = user->posY + 1;
+			newX = user->posX;
 			break;
 			
 		// left
 		case 'a':
 		case 'A':
-			playerMove(user->posY, user->posX-1, user);
+			newY = user->posY;
+			newX = user->posX-1;
 			break;
 			
 		// right
 		case 'd':
 		case 'D':
-			playerMove(user->posY, user->posX+1, user);
+			newY = user->posY;
+			newX = user->posX+1;
 			break;
 			
 		default:
+			break;
+	}
+	checkPosition(newY, newX, user);
+}
+
+// Checks whats at next position
+int checkPosition(int newY, int newX, Player * user) {
+	int space;
+	// Curses function that checks what is beneath the cursor
+	switch (mvinch(newY, newX)) {
+		// Wall
+		case '.':
+			playerMove(newY, newX, user);
+			break;
+		default:
+			move(user->posY, user->posX);
 			break;
 	}
 }
